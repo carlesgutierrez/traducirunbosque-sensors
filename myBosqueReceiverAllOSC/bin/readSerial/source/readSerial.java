@@ -50,7 +50,7 @@ float maxTimeNoRead = 31; //This board read every 30 seconds unless we ask for d
 boolean showErrorOnce = true;
 float timeBetweenReads = 0;
 
-String myDesiredArduPORT = "COM41";
+String myDesiredArduPORT = "COM4"; //COM41
 int recievePORTOSC = 12000;
 int sendPORTOSC = 55555;
 boolean serialPortStatus = false;
