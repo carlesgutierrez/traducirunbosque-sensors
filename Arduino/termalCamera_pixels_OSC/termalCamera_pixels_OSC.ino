@@ -18,18 +18,16 @@
 // WiFi stuff
 #include <ArduinoOSC.h>
 #include "arduino_secrets.h";
-const char* ssid = "MOVISTAR_2B60";//"TP-Link_71B4";
-const char* pwd = "vfd65Em8vaFguxG8TzGF";//"47824096";
 const IPAddress ip(192, 168, 1, 122);//201 //192.168.1.129 // 192, 168, 43, 201
 const IPAddress gateway(192, 168, 1, 1);
 const IPAddress subnet(255, 255, 255, 0);
 
 // for ArduinoOSC
 const char* host = "192.168.1.220";//"192.168.1.129";//.200
-const int recv_port = 54321;
-const int bind_port = 54345;
+const int recv_port = 55551;
+//const int bind_port = 54345;
 const int send_port = 55555;
-const int publish_port = 54445;
+//const int publish_port = 54445;
 
 //Thermal
 #include <Wire.h>
@@ -39,6 +37,23 @@ Adafruit_AMG88xx amg;
 
 float pixels[AMG88xx_PIXEL_ARRAY_SIZE];
 String pixelsString = "";
+
+int numFrames = 0;
+
+
+void onOscReceived(const OscMessage& m)
+{
+    Serial.print(m.remoteIP()); Serial.print(" ");
+    Serial.print(m.remotePort()); Serial.print(" ");
+    Serial.print(m.size()); Serial.print(" ");
+    Serial.print(m.address()); Serial.print(" ");
+    //Serial.print(m.arg<int>(0)); Serial.print(" ");
+    //Serial.print(m.arg<float>(1)); Serial.print(" ");
+    Serial.print(m.arg<String>(2)); Serial.println();
+
+    Serial.print("Lets Reset ESP"); 
+    ESP.restart();
+}
 
 void setupWifi() {
   Serial.begin(115200);
@@ -50,13 +65,16 @@ void setupWifi() {
   delay(1000);
   WiFi.mode(WIFI_STA);
 #endif
-  WiFi.begin(ssid, pwd);
+  WiFi.begin(SECRET_SSID, SECRET_PASS);
   WiFi.config(ip, gateway, subnet);
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     delay(500);
   }
   Serial.print("WiFi connected, IP = "); Serial.println(WiFi.localIP());
+
+  OscWiFi.subscribe(recv_port, "/reset/thermalCam", onOscReceived);
+  Serial.println("/reset/thermalCam -> onOscReceived"); 
 }
 void setupThermalCam() {
   Serial.println("Setup");

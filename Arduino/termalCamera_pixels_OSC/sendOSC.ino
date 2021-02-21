@@ -1,6 +1,10 @@
 
 //-----------------------
 void loopOSC(){
+    OscWiFi.update(); // should be called to receive + send osc
+        // or do that separately
+    // OscWiFi.parse(); // to receive osc
+    // OscWiFi.post(); // to publish osc
     
     static uint32_t prev_value_ms = millis();
     if (millis() > prev_value_ms + 16) // short active wait method before to send again
