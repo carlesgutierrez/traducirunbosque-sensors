@@ -48,13 +48,13 @@ int timeRead = 0;
 float timeNoReading = 0;
 float maxTimeNoRead = 31; //This board read every 30 seconds unless we ask for data automatically TODO
 boolean showErrorOnce = true;
-float timeBetweenReads = 0;
+float timeBetweenReadsFastData = 0.4f;
 
-String myDesiredArduPORT = "COM4"; //COM41
+String myDesiredArduPORT = "COM4"; //COM41 //TODO add last COM PORT found
 int recievePORTOSC = 12000;
 int sendPORTOSC = 55555;
 boolean serialPortStatus = false;
-boolean fastDataActive = false;
+boolean fastDataActive = true;
 
 //TODO ask data auto everuy 100ms for quick data
 //Check loadJson if not serial data is available
@@ -72,7 +72,7 @@ ControlP5 cp5;
 
 //-----------------------------------------
 public void fastData(boolean theFlag) {
-  if(theFlag==true) {
+  if (theFlag==true) {
     fastDataActive = true;
     println("fastDataActive = true;");
   } else {
@@ -88,25 +88,26 @@ public void setup ( ) {
   surface.setTitle("SmartCity Sensors");
   surface.setResizable(false);
   surface.setLocation(0, 0);
-  
+
   //Serial
-  myPort  =  new Serial (this, myDesiredArduPORT, 115200); // COM36 // Set the com port and the baud rate according to the Arduino ID
-  myPort.bufferUntil ( '\n' );   // Receiving the data from the Arduino IDE
+  tryOpenLastSerialPortAvailable();
+
+
   timeRead = millis();
 
   //Osc
   /* start oscP5, listening for incoming messages at port 12000 */
   oscP5 = new OscP5(this, recievePORTOSC);
   myRemoteLocation = new NetAddress("127.0.0.1", sendPORTOSC);
-  
+
   //GUI
   cp5 = new ControlP5(this);
-    // create a toggle and change the default look to a (on/off) switch look
+  // create a toggle and change the default look to a (on/off) switch look
   cp5.addToggle("fastData")
-     .setPosition(width - 150, 85)
-     .setSize(50,50)
-     .setValue(false)
-     ;
+    .setPosition(width - 150, 85)
+    .setSize(50, 50)
+    .setValue(true) //modif here to avoid or allow fast data actived at init!
+    ;
 } 
 //------------------------------------------
 public void draw ( ) {
@@ -148,22 +149,10 @@ public void draw ( ) {
 
   if (timeNoReading > maxTimeNoRead )fill(255, 0, 0);
   else fill(255);
-  text("timeNoReading -> "+nf(timeNoReading, 0, 1)+" s", posDataX, height - 80);
+  text("timeNoReading -> "+nf(timeNoReading, 0, 3)+" s", posDataX, height - 80);
   fill(255);
   text("IP -> "+oscP5.ip()+ "/:"+str(myRemoteLocation.port()), posDataX, height - 40);
   //text("localhost -> "+myRemoteLocation.address()+ "/:"+str(recievePORTOSC), posDataX, height - 10);
-
-
-  if ( mousePressed  &&  ( mouseButton  ==  LEFT ) ) { // if the left mouse button is pressed
-
-    //myPort.write ( "help\r" ) ;
-  } 
-
-  if  ( mousePressed  &&  ( mouseButton == RIGHT ) ) {  // if the right mouse button is pressed
-
-    myPort.write ( "read noise\r" ) ; 
-    myPort.write ( "read light\r" ) ;
-  }
 }
 
 //------------------------------------------
@@ -175,12 +164,14 @@ public void update() {
       showErrorOnce = false;
       timeRead = millis();
       myPort.stop();
+      serialPortStatus = myPort.active();
+      print("Is port active?"+str(serialPortStatus));
     } else {
       reOpenSerialPort();
       showErrorOnce = true;
     }
-  }else if(fastDataActive && timeNoReading > 0.1f){
-    udpateFastData();
+  } else if (fastDataActive && timeNoReading > timeBetweenReadsFastData) {
+    if (serialPortStatus)udpateFastData();
   }
 
 
@@ -269,25 +260,57 @@ public void exit() {
 //------------------------------------------
 public void reOpenSerialPort() {
   println("Re Open Serial port... ");
-  serialPortStatus = myPort.active();
-  println("Is port active? "+str(serialPortStatus));
 
+  tryOpenLastSerialPortAvailable();
+
+  /*
   String [] portsAvailable = myPort.list();
+   boolean myPortCOMIsAvailable = false;
+   for (int i=0; i<portsAvailable.length; i++) {
+   boolean aval = myDesiredArduPORT.equals(portsAvailable[i]);
+   println("aval ->"+ aval+ " is "+str(aval));
+   myPortCOMIsAvailable = (myPortCOMIsAvailable || aval);
+   println("portsAvailable[i] ->"+ portsAvailable[i]+ " is the one? "+str(myPortCOMIsAvailable));
+   }
+   if (myPortCOMIsAvailable) {
+   println("Good Lets open ->"+ myDesiredArduPORT);
+   print(portsAvailable);
+   myPort  =  new Serial (this, myDesiredArduPORT, 115200);
+   myPort.bufferUntil('\n');
+   timeRead = millis();
+   }
+   */
+}
+
+//------------------------------------------
+public void tryOpenLastSerialPortAvailable() {
+
+  //Serial
+  String [] auxportsAvailable = Serial.list();
   boolean myPortCOMIsAvailable = false;
-  for (int i=0; i<portsAvailable.length; i++) {
-    boolean aval = myDesiredArduPORT.equals(portsAvailable[i]);
-    println("aval ->"+ aval+ " is "+str(aval));
-    myPortCOMIsAvailable = (myPortCOMIsAvailable || aval);
-    println("portsAvailable[i] ->"+ portsAvailable[i]+ " is the one? "+str(myPortCOMIsAvailable));
+  for (int i=0; i<auxportsAvailable.length; i++) {
+    println(auxportsAvailable[i]);
+    if (i==auxportsAvailable.length-1) { //last PORT name
+      if (auxportsAvailable[i].equals(myDesiredArduPORT)) {
+        println("Good. Expected PORT is Available --> "+myDesiredArduPORT);
+        myPortCOMIsAvailable = true;
+      } else {
+        println("ok..." +myDesiredArduPORT+ " is not here. So Let's choose last PORT Available as an option --> "+auxportsAvailable[i]);
+        myDesiredArduPORT = auxportsAvailable[i];
+        myPortCOMIsAvailable = true;
+      }
+    }
   }
+
   if (myPortCOMIsAvailable) {
-    println("Good Lets open ->"+ myDesiredArduPORT);
-    print(portsAvailable);
-    myPort  =  new Serial (this, myDesiredArduPORT, 115200);
-    myPort.bufferUntil('\n');
+    myPort  =  new Serial (this, myDesiredArduPORT, 115200); // COM36 // Set the com port and the baud rate according to the Arduino ID
+    myPort.bufferUntil ( '\n' );   // Receiving the data from the Arduino IDE
     timeRead = millis();
+    serialPortStatus = myPort.active();
+    println("Is port active? "+str(serialPortStatus));
   }
 }
+
 //------------------------------------------
 public void keyPressed() {
 
@@ -315,61 +338,96 @@ public void serialEvent  (Serial myPort) {
   if (bReadMainSerial)print("--->");
 
   timeRead = millis();
+  String auxFilterVal;
 
-  int pBat = info.indexOf("Battery:");
+  int pBat = info.indexOf("Battery");
   if (pBat>=0) {
     //println(pBat);
-    String infoBat = info.substring(pBat+8, pBat+8+6);
+    //String infoBat = info.substring(pBat+8, pBat+8+6);
+    auxFilterVal = info.replaceAll("[^0-9.]", "");
     if (bInfoRaw)print("Battery: ");
-    if (bInfoRaw)println(infoBat);
-    batVal = PApplet.parseFloat(trim(infoBat));
-    if (bInfoVal)print("batVal: ");
+    if (bInfoRaw)println(auxFilterVal);
+    batVal = PApplet.parseFloat(trim(auxFilterVal));
+    if (bInfoVal)print("BatteryVal: ");
     if (bInfoVal)println(batVal);
   }
-  int pNoise = info.indexOf("Noise:");
+  int pNoise = info.indexOf("Noise");
   if (pNoise>=0) {
     //println(pNoise);
-    String infoNoise = info.substring(pNoise+7, pNoise+7+6);
+    //String infoNoise = info.substring(pNoise+7, pNoise+7+6);
+    auxFilterVal = info.replaceAll("[^0-9.]", "");
     if (bInfoRaw)print("Noise: ");
-    if (bInfoRaw)println(infoNoise);
-    noiseVal = PApplet.parseFloat(trim(infoNoise));
+    if (bInfoRaw)println(auxFilterVal);
+    noiseVal = PApplet.parseFloat(trim(auxFilterVal));
     if (bInfoVal)print("noiseVal: ");
     if (bInfoVal)println(noiseVal);
     if (noiseVal > 0)bNoise = true;
   }
 
-  int pHumidity = info.indexOf("Humidity:");
+  int pHumidity = info.indexOf("Humidity");
   if (pHumidity>=0) {
     //println(pNoise);
-    String infoHumidity = info.substring(pHumidity+10, pHumidity+10+6);
+    //String infoHumidity = info.substring(pHumidity+10, pHumidity+10+6);
+    auxFilterVal = info.replaceAll("[^0-9.]", "");
     if (bInfoRaw)print("Humidity: ");
-    if (bInfoRaw)println(infoHumidity);
-    humVal = PApplet.parseFloat(trim(infoHumidity));
+    if (bInfoRaw)println(auxFilterVal);
+    humVal = PApplet.parseFloat(trim(auxFilterVal));
     if (bInfoVal)print("humVal: ");
     if (bInfoVal)println(humVal);
     if (humVal > 0)bHum = true;
   }
 
-  int pTemperature = info.indexOf("Temperature:");
+  int pTemperature = info.indexOf("Temperature");
   if (pTemperature>=0) {
-    String infoTemperature = info.substring(pTemperature+13, pTemperature+13+5);
+    //String infoTemperature = info.substring(pTemperature+13, pTemperature+13+5);
+    auxFilterVal = info.replaceAll("[^0-9.]", "");
     if (bInfoRaw)print("Temperature: ");
-    if (bInfoRaw)println(infoTemperature);
-    tempVal = PApplet.parseFloat(trim(infoTemperature));
+    if (bInfoRaw)println(auxFilterVal);
+    tempVal = PApplet.parseFloat(trim(auxFilterVal));
     if (bInfoVal)print("tempVal: ");
     if (bInfoVal)println(tempVal);
     if (tempVal > 0)bTemp = true;
   }
 
-  int pLight = info.indexOf("Light:");
+
+  int pLight = info.indexOf("Light");
   if (pLight>=0) {
-    String infoLight = info.substring(pLight+7, pLight+7+6);
+    //String infoLight = info.substring(pLight+7, pLight+7+10);
+    auxFilterVal = info.replaceAll("[^0-9.]", "");
     if (bInfoRaw)print("Light: ");
-    if (bInfoRaw)println(infoLight);
-    lightVal = PApplet.parseFloat(trim(infoLight));
+    if (bInfoRaw)println(auxFilterVal);
+    lightVal = PApplet.parseFloat(trim(auxFilterVal));
     if (bInfoVal)print("LightVal: ");
     if (bInfoVal)println(lightVal);
     if (lightVal > 0)bLight = true;
+  }
+
+  int pVoc = info.indexOf("VOC Gas CCS811:");
+  if (pVoc>=0) {
+    String infoVoc = info.substring(pVoc+16, info.length());
+    if (bInfoVal)print("infoVoc: ");
+    if (bInfoVal)println(infoVoc);
+    auxFilterVal = infoVoc.replaceAll("[^0-9.]", "");
+    if (false)print("Voc: ");
+    if (false)println(auxFilterVal);
+    VOCVal = PApplet.parseFloat(trim(auxFilterVal));
+    if (bInfoVal)print("VocVal: ");
+    if (bInfoVal)println(VOCVal);
+    if (VOCVal >= 0)bVOC = true;
+  }
+
+  int pCO2 = info.indexOf("eCO2 Gas CCS811:");
+  if (pCO2>=0) {
+    String infoCO2 = info.substring(pCO2+16, info.length());
+    if (bInfoVal)print("infoCO2: ");
+    if (bInfoVal)println(infoCO2);
+    auxFilterVal = infoCO2.replaceAll("[^0-9.]", "");
+    if (false)print("CO2: ");
+    if (false)println(auxFilterVal);
+    CO2Val = PApplet.parseFloat(trim(auxFilterVal));
+    if (bInfoVal)print("CO2Val: ");
+    if (bInfoVal)println(CO2Val);
+    if (CO2Val >= 0)bCO2 = true;
   }
 
   /* Terminal example

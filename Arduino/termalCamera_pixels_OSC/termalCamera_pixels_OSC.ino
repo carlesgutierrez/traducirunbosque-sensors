@@ -25,9 +25,10 @@ const IPAddress subnet(255, 255, 255, 0);
 // for ArduinoOSC
 const char* host = "192.168.1.220";//"192.168.1.129";//.200
 const int recv_port = 55551;
-//const int bind_port = 54345;
 const int send_port = 55555;
-//const int publish_port = 54445;
+
+int millisOSC = 100;
+
 
 //Thermal
 #include <Wire.h>
@@ -38,69 +39,13 @@ Adafruit_AMG88xx amg;
 float pixels[AMG88xx_PIXEL_ARRAY_SIZE];
 String pixelsString = "";
 
-int numFrames = 0;
-
-
-void onOscReceived(const OscMessage& m)
-{
-    Serial.print(m.remoteIP()); Serial.print(" ");
-    Serial.print(m.remotePort()); Serial.print(" ");
-    Serial.print(m.size()); Serial.print(" ");
-    Serial.print(m.address()); Serial.print(" ");
-    //Serial.print(m.arg<int>(0)); Serial.print(" ");
-    //Serial.print(m.arg<float>(1)); Serial.print(" ");
-    Serial.print(m.arg<String>(2)); Serial.println();
-
-    Serial.print("Lets Reset ESP"); 
-    ESP.restart();
-}
-
-void setupWifi() {
-  Serial.begin(115200);
-  delay(2000);
-
-  // WiFi stuff (no timeout setting for WiFi)
-#ifdef ESP_PLATFORM
-  WiFi.disconnect(true, true); // disable wifi, erase ap info
-  delay(1000);
-  WiFi.mode(WIFI_STA);
-#endif
-  WiFi.begin(SECRET_SSID, SECRET_PASS);
-  WiFi.config(ip, gateway, subnet);
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
-    delay(500);
-  }
-  Serial.print("WiFi connected, IP = "); Serial.println(WiFi.localIP());
-
-  OscWiFi.subscribe(recv_port, "/reset/thermalCam", onOscReceived);
-  Serial.println("/reset/thermalCam -> onOscReceived"); 
-}
-void setupThermalCam() {
-  Serial.println("Setup");
-  Serial.println(F("AMG88xx pixels"));
-
-  bool status;
-
-  // default settings
-  status = amg.begin();
-  if (!status) {
-    Serial.println("Could not find a valid AMG88xx sensor, check wiring!");
-    while (1);
-  }
-
-  Serial.println("-- Pixels Test --");
-  Serial.print("AMG status--> ");
-  Serial.println(status);
-  Serial.println();
-  delay(100); // let sensor boot up
-}
+//-----------------------
 void setup() {
   setupThermalCam();
   setupWifi();
 
 }
-
+//-----------------------
 void loop() {
   loopThermalCam();
   loopOSC();

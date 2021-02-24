@@ -24,17 +24,17 @@
 /////////////////////////////
 // WiFi stuff
 #include <ArduinoOSC.h>
-const char* ssid = "TP-Link_71B4";
-const char* pwd = "47824096";
+#include "arduino_secrets.h";
 const IPAddress ip(192, 168, 1, 121);//201 //192.168.1.129 // 192, 168, 43, 201
 const IPAddress gateway(192, 168, 1, 1);
 const IPAddress subnet(255, 255, 255, 0);
 // for ArduinoOSC
 const char* host = "192.168.1.220";//"192.168.1.129";//.200
 const int recv_port = 54321;
-const int bind_port = 54345;
 const int send_port = 55555;
-const int publish_port = 54445;
+
+int millisOSC = 100;
+
 /////////////////////////////
 #include <Wire.h>
 #include "Adafruit_AS726x.h"
@@ -49,6 +49,19 @@ uint16_t sensorValues[AS726x_NUM_CHANNELS];
 
 //buffer to hold calibrated values (not used by default in this example)
 float calibratedValues[AS726x_NUM_CHANNELS];
+
+
+//All values
+float greenValue, greenValueCali;
+float blueValue, blueValueCali;
+float redValue, redValueCali;
+
+float violetValue, violetValueCali;
+float yellowValue, yellowValueCali;
+float orangeValue, orangeValueCali;
+
+//Composed color values
+float blueRedVal, blueRedValCali;
 
 //My desired value
 float coefVerdor = 0.0f;
@@ -113,10 +126,15 @@ void loopSpectrometer() {
     Serial.print(" Red: "); Serial.print(sensorValues[AS726x_RED]);
     Serial.println();
   }
-  float greenValue = sensorValues[AS726x_GREEN];
-  float blueValue = sensorValues[AS726x_BLUE];
-  float redValue = sensorValues[AS726x_RED];
-  float blueRedVal = (blueValue + redValue);
+  greenValue = sensorValues[AS726x_GREEN];
+  blueValue = sensorValues[AS726x_BLUE];
+  redValue = sensorValues[AS726x_RED];
+
+  violetValue = sensorValues[AS726x_VIOLET]; 
+  yellowValue = sensorValues[AS726x_ORANGE];
+  orangeValue = sensorValues[AS726x_ORANGE];
+   
+  blueRedVal = (blueValue + redValue);
 
   if (greenValue != 0 && blueValue != 0 && redValue != 0) {
     coefVerdor = greenValue / blueRedVal;
@@ -140,17 +158,22 @@ void loopSpectrometer() {
     Serial.println();
   }
 
-  float greenValueCali = calibratedValues[AS726x_GREEN];
-  float blueValueCali = calibratedValues[AS726x_BLUE];
-  float redValueCali = calibratedValues[AS726x_RED];
-  float blueRedValCali = (blueValueCali + redValueCali);
+  greenValueCali = calibratedValues[AS726x_GREEN];
+  blueValueCali = calibratedValues[AS726x_BLUE];
+  redValueCali = calibratedValues[AS726x_RED];
+
+  violetValueCali = calibratedValues[AS726x_VIOLET]; 
+  yellowValueCali = calibratedValues[AS726x_YELLOW];
+  orangeValueCali = calibratedValues[AS726x_ORANGE];
+  
+  blueRedValCali = (blueValueCali + redValueCali);
 
   if (greenValueCali != 0 && blueValueCali != 0 && redValueCali != 0) {
     coefVerdorCali = greenValueCali / blueRedValCali;
-    Serial.print(" Cociente de calidad de verdor calibrado: "); Serial.print(coefVerdorCali, 3);
+    //Serial.print(" Cociente de calidad de verdor calibrado: "); Serial.print(coefVerdorCali, 3);
     bErrorData = false;
   } else {
-    Serial.print("Error transmision data ");
+    Serial.print("Error data values");
     bErrorData = true;
   }
 
