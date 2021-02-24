@@ -22,6 +22,8 @@ boolean bCO2 = false;
 boolean bReadMainSerial = false;
 boolean bInfoRaw = false;
 boolean bInfoVal = false;
+boolean bReadLastCOM = true;
+String myDesiredArduPORT = "COM5"; //COM41 //TODO add last COM PORT found
 
 int timeRead = 0;
 float timeNoReading = 0;
@@ -29,7 +31,7 @@ float maxTimeNoRead = 31; //This board read every 30 seconds unless we ask for d
 boolean showErrorOnce = true;
 float timeBetweenReadsFastData = 0.4;
 
-String myDesiredArduPORT = "COM4"; //COM41 //TODO add last COM PORT found
+
 int recievePORTOSC = 12000;
 int sendPORTOSC = 55555;
 boolean serialPortStatus = false;
@@ -264,19 +266,23 @@ void reOpenSerialPort() {
 //------------------------------------------
 void tryOpenLastSerialPortAvailable() {
 
-  //Serial
-  String [] auxportsAvailable = Serial.list();
   boolean myPortCOMIsAvailable = false;
-  for (int i=0; i<auxportsAvailable.length; i++) {
-    println(auxportsAvailable[i]);
-    if (i==auxportsAvailable.length-1) { //last PORT name
-      if (auxportsAvailable[i].equals(myDesiredArduPORT)) {
-        println("Good. Expected PORT is Available --> "+myDesiredArduPORT);
-        myPortCOMIsAvailable = true;
-      } else {
-        println("ok..." +myDesiredArduPORT+ " is not here. So Let's choose last PORT Available as an option --> "+auxportsAvailable[i]);
-        myDesiredArduPORT = auxportsAvailable[i];
-        myPortCOMIsAvailable = true;
+  
+  if (bReadLastCOM) {
+    //Serial
+    String [] auxportsAvailable = Serial.list();
+
+    for (int i=0; i<auxportsAvailable.length; i++) {
+      println(auxportsAvailable[i]);
+      if (i==auxportsAvailable.length-1) { //last PORT name
+        if (auxportsAvailable[i].equals(myDesiredArduPORT)) {
+          println("Good. Expected PORT is Available --> "+myDesiredArduPORT);
+          myPortCOMIsAvailable = true;
+        } else {
+          println("ok..." +myDesiredArduPORT+ " is not here. So Let's choose last PORT Available as an option --> "+auxportsAvailable[i]);
+          myDesiredArduPORT = auxportsAvailable[i];
+          myPortCOMIsAvailable = true;
+        }
       }
     }
   }
