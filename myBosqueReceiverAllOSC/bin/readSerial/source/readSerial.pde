@@ -267,7 +267,7 @@ void reOpenSerialPort() {
 void tryOpenLastSerialPortAvailable() {
 
   boolean myPortCOMIsAvailable = false;
-  
+
   if (bReadLastCOM) {
     //Serial
     String [] auxportsAvailable = Serial.list();
@@ -279,9 +279,11 @@ void tryOpenLastSerialPortAvailable() {
           println("Good. Expected PORT is Available --> "+myDesiredArduPORT);
           myPortCOMIsAvailable = true;
         } else {
-          println("ok..." +myDesiredArduPORT+ " is not here. So Let's choose last PORT Available as an option --> "+auxportsAvailable[i]);
-          myDesiredArduPORT = auxportsAvailable[i];
-          myPortCOMIsAvailable = true;
+          if (myPortCOMIsAvailable == false) {
+            println("ok..." +myDesiredArduPORT+ " is not here. So Let's choose last PORT Available as an option --> "+auxportsAvailable[i]);
+            myDesiredArduPORT = auxportsAvailable[i];
+            myPortCOMIsAvailable = true;
+          }
         }
       }
     }
