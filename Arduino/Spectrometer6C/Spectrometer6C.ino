@@ -25,11 +25,11 @@
 // WiFi stuff
 #include <ArduinoOSC.h>
 #include "arduino_secrets.h";
-const IPAddress ip(192, 168, 1, 121);//201 //192.168.1.129 // 192, 168, 43, 201
+const IPAddress ip(192, 168, 1, 131);//Instalació 1:192, 168, 1, 121 //Instalación 2: 192, 168, 1, 131
 const IPAddress gateway(192, 168, 1, 1);
 const IPAddress subnet(255, 255, 255, 0);
 // for ArduinoOSC
-const char* host = "192.168.1.220";//"192.168.1.129";//.200
+const char* host = "192.168.1.230";//Instalació 1:192, 168, 1, 220 //Instalación 2: 192, 168, 1, 230
 const int recv_port = 54321;
 const int send_port = 55555;
 

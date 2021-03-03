@@ -8,11 +8,10 @@ const IPAddress gateway(192, 168, 1, 1); //192, 168, 43, 1
 const IPAddress subnet(255, 255, 255, 0);
 
 // for ArduinoOSC
-const char* host = "192.168.1.220";//"192.168.43.244";
-const int recv_port = 54321;
-const int bind_port = 54345;
+const char* host = "192.168.1.230";//"192.168.43.244";
+const int recv_port = 55551;
 const int send_port = 55555;
-const int publish_port = 54445;
+int millisOSC = 2000;
 
 //Plotter
 bool bDebugInfo = true;
@@ -74,7 +73,7 @@ float moistMin_Wet = 400;
 bool bHumTempSensorAvailable = false;
 bool bMoistureSensorAvailable = true; // Just analog
 bool bPhSensorAvailable = false;
-int millisOSC = 2000;
+
 
 /////////////////////////////////////////////////
 void setup() {

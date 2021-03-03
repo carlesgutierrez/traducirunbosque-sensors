@@ -1,4 +1,17 @@
+void onOscReceived(const OscMessage& m)
+{
+    Serial.print(m.remoteIP()); Serial.print(" ");
+    Serial.print(m.remotePort()); Serial.print(" ");
+    Serial.print(m.size()); Serial.print(" ");
+    Serial.print(m.address()); Serial.print(" ");
+    //Serial.print(m.arg<int>(0)); Serial.print(" ");
+    //Serial.print(m.arg<float>(1)); Serial.print(" ");
+    Serial.print(m.arg<String>(2)); Serial.println();
 
+    Serial.print("Lets Reset ESP"); 
+    //ESP.restart();
+    NVIC_SystemReset();
+}
 
 void setupWifi(){
     if(bSerial)Serial.begin(115200);
