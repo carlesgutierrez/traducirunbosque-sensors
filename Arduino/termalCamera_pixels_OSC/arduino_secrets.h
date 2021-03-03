@@ -1,2 +1,0 @@
-#define SECRET_SSID "TP-Link_71B4"//"MOVISTAR_2B60"//"TP-Link_71B4"
-#define SECRET_PASS "47824096" //"vfd65Em8vaFguxG8TzGF"//"47824096"
