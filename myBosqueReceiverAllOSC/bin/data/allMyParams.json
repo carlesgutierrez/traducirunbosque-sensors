@@ -1,0 +1,38 @@
+[
+   {
+      "parametros" : {
+         "id" : "1",
+         "soilAirTempMin" : "5",
+         "soilAirTempMax" : "30",
+         "soilAirHumMin" : "0",
+         "soilAirHumMax" : "100",
+         "soilPhMin" : "3.0f",
+         "soilPhMax" : "9.0f",
+         "soilMoistureMin" : "640",
+         "soilMoistureMax" : "400",
+         "coefValLeavesMin" : "0.0f",
+         "coefValLeavesMax" : "1.2f",
+         "colorValLeavesMin" : "0",
+         "colorValLeavesMax" : "255",
+         "smartLightMin" : "0",
+         "smartLightMax" : "5000.0f",
+         "smartVocMin" : "0",
+         "smartVocMax" : "200.0f",
+         "smartCo2Min" : "0",
+         "smartCo2Max" : "200.0f",
+         "smartNoiseMin" : "0",
+         "smartNoiseMax" : "80",
+         "camPixelsMin" : "10",
+         "camPixelsMax" : "30"
+      }
+   },
+   {
+      "ipconfiguracion" : {
+         "id" : "1",
+         "HOSTSenderUnity1" : "192.168.1.215",
+         "HOSTSenderPureData" : "localhost",
+         "HOSTSenderEspThermalCam01" : "192.168.1.122",
+         "HOSTSenderSerial" : "127.0.0.1"
+      }
+   }
+]
