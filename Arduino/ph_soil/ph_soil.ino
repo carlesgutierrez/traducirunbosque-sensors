@@ -3,12 +3,12 @@
 #include "arduino_secrets.h";
 
 // WiFi stuff
-const IPAddress ip(192, 168, 1, 223);//id 2 phSoil and Co //192.168.1.100 //192, 168, 43, 202
+const IPAddress ip(192, 168, 1, 123);//Instalación 1 -> 192, 168, 1, 123 //Instalación 2 -> 192, 168, 1, 133
 const IPAddress gateway(192, 168, 1, 1); //192, 168, 43, 1
 const IPAddress subnet(255, 255, 255, 0);
 
 // for ArduinoOSC
-const char* host = "192.168.1.230";//"192.168.43.244";
+const char* host = "192.168.1.220";//Instalación 2 -> "192.168.43.230"; //Instalación 1 -> "192.168.43.220";
 const int recv_port = 55551;
 const int send_port = 55555;
 int millisOSC = 2000;
